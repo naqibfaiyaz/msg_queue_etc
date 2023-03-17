@@ -18,3 +18,5 @@ requests==2.28.2
 flask_mysqldb
 boto3==1.26.77
 ec2-metadata
+etcd3
+protobuf==3.20.*

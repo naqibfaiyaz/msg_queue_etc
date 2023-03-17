@@ -23,8 +23,10 @@ logging.info("Memcache Initialized: ", memcache)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 db = SQLAlchemy()
-AWS_ACCESS_KEY=os.getenv('aws_access_key_id')
-AWS_SECRET_KEY=os.getenv('aws_secret_access_key')
+RANGE_START=os.getenv('RANGE_START')
+RANGE_END=os.getenv('RANGE_END')
+ETCD_HOST=os.getenv('ETCD_HOST')
+ETCD_PORT=os.getenv('ETCD_PORT')
 # login_manager = LoginManager()
 
 def register_extensions(app):

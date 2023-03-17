@@ -6,7 +6,7 @@ Copyright (c) 2019 - present AppSeed.us
 from flask import Blueprint
 
 blueprint = Blueprint(
-    'memcache_blueprint',
+    'msgQueue_blueprint',
     __name__,
-    url_prefix='/memcache'
+    url_prefix='/api'
 )

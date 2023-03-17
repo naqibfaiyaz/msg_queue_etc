@@ -3,18 +3,13 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from apps.services.memcache import blueprint
+from apps.services.msg_queue import blueprint
 from flask import render_template, json, request, jsonify, Response, redirect
 # from flask_login import login_required
+import etcd3, os.path
+from csv import DictWriter, DictReader
 
-from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache, invalidateCache, getCurrentPolicy, setCurrentPolicy
-from apps.services.memcache.forms import ImageForm
-from apps.services.helper import getBase64
-from apps import memcache, logging, db
-from pympler import asizeof
-from apps.services.memcache.models import knownKeys
-# from apps.services.cloudWatch.routes import put_metric_data_cw
-import re
+from apps import RANGE_START, RANGE_END, ETCD_HOST, ETCD_PORT
 
 @blueprint.route('/index')
 # @login_required
@@ -26,162 +21,163 @@ def RedirectIndex():
 def index():
     return render_template('home/index.html', segment='index')
 
-@blueprint.route('/api/clearAll', methods=["GET", "POST"])
-def clear():
-    return clearCache()
+@blueprint.route('/consumer/execute', methods=['GET', 'POST'])
+# @login_required
+def consumer():
+    i=int(RANGE_START)
+    values=[]
+    fileName='consumer.csv'
+    while i<=int(RANGE_END):
+        key='test' + str(i)
+        data=json.loads(getKey(key).data)
+        print(data)
+        if(data['success']):
+            print(data)
+            ##write to file
+            appendToCSV(fileName, data['data'])
+            deleteResponse=json.loads(deleteKey(key).data)
+            if(deleteResponse['success']):
+                values.append(data['data'])
+            else:
+                values.append(data['data'])
+        i=i+1
 
-@blueprint.route('/api/delete_all', methods=["POST"])
-def test_delete_all():
-    try:
-        # test_getMemcacheSize()
-        db.session.query(knownKeys).delete()
-        db.session.commit()
+    print(values)
 
-        response = clearCache()
-    except:
-        db.session.rollback()
+    return Response(json.dumps({"total_consumed": len(values)}), content_type='application/json', status=200)
+
+@blueprint.route('/producer/execute', methods=['GET', 'POST'])
+# @login_required
+def producer():
+    i=0
+    values=[]
+    fileName='producer.csv'
+    data = readCSV(fileName)
     
-    if 'success' in response and response['success']=='true':
-        # test_getMemcacheSize()
-        return Response(json.dumps(response), status=200, mimetype='application/json')
-    else:
-        # test_getMemcacheSize()
-        return Response(json.dumps(response), status=response['error']['code'], mimetype='application/json')
+    if data['success']:
+        for row in data['data']:
+            key=row['key']
+            value=row['value']
+            
+            data=json.loads(putKey(key, value).data)
+            print(data)
+            if(data['success']):
+                print(data)
+                values.append(data['data'])
 
-@blueprint.route('/api/list_cache', methods=["POST"])
-def test_list_keys_cache():
-    # test_getMemcacheSize()
-    return getAllCaches()
-
-@blueprint.route('/api/list_keys', methods=["POST"])
-def test_list_keys_db():
-    # test_getMemcacheSize()
-    allDBKeys=knownKeys.query.all()
-    knownKeysInDB={i.key:i.serialize for i in allDBKeys}
+            i=i+1
     
-    return {
-                "content": knownKeysInDB,
-                "success": "true",
-                "keys": list(knownKeysInDB.keys())
-            }
+    print(values)
 
-@blueprint.route('/api/invalidate/<url_key>', methods=["GET","POST"])
-def test_invalidate(url_key):
-    return invalidateCache(url_key)
+    return Response(json.dumps({"total_produced": len(values)}), content_type='application/json', status=200)
 
-@blueprint.route('/api/upload', methods=["POST"])
-def test_upload():
-    # test_getMemcacheSize()
-    login_form = ImageForm(meta={'csrf': False})
-    logging.info(str(login_form))
-    if login_form.validate_on_submit():
-        requestedKey = request.form.get('key')
-        image_path = request.form.get('image_path')
-        logging.info(requestedKey)
-        logging.info(image_path)
-        key = knownKeys.query.filter_by(key=requestedKey).first()
-        
-        if key:
-            invalidateCache(requestedKey)
-            key.img_path=image_path
-            db.session.commit()
-        else:
-            newKeyEntry = knownKeys(key = requestedKey,
-                    img_path = image_path)
-            db.session.add(newKeyEntry)   
-            db.session.commit()
+@blueprint.route('/get/<key>', methods=['GET', 'POST'])
+# @login_required
+def getKey(key):
+    etcd=etcdClient()
 
-        base64_img=getBase64(image_path)
-        
-        response = putCache(requestedKey, base64_img)
-        # test_getMemcacheSize()
-        if 'success' in response and response['success']=='true':
-            return Response(json.dumps(response), status=response['code'] if 'code' in response else 200, mimetype='application/json')
-        else:
-            return Response(json.dumps(response), status=response['error']['code'], mimetype='application/json')
+    response=etcd.get(key)
 
+    if response[0]:
+        data=response[0].decode("utf-8")
+        status=200
+        success=True
     else:
-        return Response(json.dumps({"success": "false", "error": {"code": 400, "message": str(login_form.errors.items())}}), status=400, mimetype='application/json')
+        data=None
+        status=404
+        success=False
 
+    return Response(json.dumps({"success": success, "data": {"key":key, "value": data}}), content_type='application/json', status=status)
 
-@blueprint.route('/api/key/<url_key>', methods=["POST"])
-def test_retrieval(url_key):
-    # test_getMemcacheSize()
-    requestedKey = url_key or request.form.get('key')
-    print(requestedKey)
-    response = getSingleCache(requestedKey)
-    print(response)
-    if "success" in response and response['success']=="true":
-        cacheResponse='hit'
-    else:
-        cacheResponse='miss'
-        keyFromDB = knownKeys.query.filter_by(key=requestedKey).first()
-        if keyFromDB:
-            knowKey=keyFromDB.key
-            image_path=keyFromDB.img_path
-            base64_img=getBase64(image_path)
-            newResponse={
-                "success": "true", 
-                "key": knowKey, 
-                "content": {
-                    "img": base64_img,
-                    "accessed_at": None,
-                    "accessed_at_in_millis": None,
-                    "created_at": None,
-                    "image_size": None,
-                    "msg": "Serving from database directly"
-                }}
-            response = newResponse if "cache" in putCache(requestedKey, base64_img) and putCache(requestedKey, base64_img)['cache']=='miss' else getSingleCache(requestedKey)
+@blueprint.route('/delete/<key>', methods=['GET', 'POST'])
+# @login_required
+def deleteKey(key):
+    etcd=etcdClient()
     
-    # newRequest = memcahceRequests(type = cacheState,
-    #                 known_key = requestedKey)
-    # db.session.add(newRequest)   
-    # db.session.commit()
-    response['cache_status'] = cacheResponse
-    print(response)
-    if 'success' in response and response['success']=='true':
-        return Response(json.dumps(response), status=200, mimetype='application/json')
+    response=etcd.delete(key)
+
+    if response:
+        data="Key has been Deleted"
+        status=200
+        success=True
     else:
-        return Response(json.dumps(response), status=404, mimetype='application/json')
+        data="Key does not exist"
+        status=404
+        success=False
 
-@blueprint.route('/api/refreshConfig', methods={"POST"})
-def refreshConfiguration():
-    # test_getMemcacheSize()
-    if request.form.get("replacement_policy") and request.form.get("capacity"):
-        
-        return Response(json.dumps(setCurrentPolicy(request.form.get("replacement_policy"), request.form.get("capacity"))), status=200, mimetype='application/json')
-        
-    else: 
-        return Response(json.dumps({
-            "success": "false",
-            "msg": "Either replacement_policy or capacity or both are missing."
-        }), status=400, mimetype='application/json')
-
-@blueprint.route('/api/getConfig', methods=["GET"])
-def test_getConfig():
-    return getCurrentPolicy()
+    return Response(json.dumps({'success': success, 'data': {"key": key, "value": data} }), content_type='application/json', status=status)
 
 
-@blueprint.route('/api/getCacheData', methods=["POST"])
-def getCacheSize():
-    cache = memcache
-    size= asizeof.asizeof(cache)/1024/1024
-    logging.info(size)
-    return {
-        "memcache_size_mb": size,
-        "memcache_keys_count": len(cache)
-        }
+@blueprint.route('/put', methods=['POST'])
+# @login_required
+def putKey(key=None, value=None):
+    key=key or request.form.get('key')
+    value=value or request.form.get('value')
+    etcd=etcdClient()
 
-@blueprint.errorhandler(403)
-def access_forbidden(error):
-    return render_template('home/page-404.html'), 404
+    response=etcd.put(key, value)
+
+    if response:
+        data=value
+        status=200
+        success=True
+    else:
+        data="Something went wrong"
+        status=404
+        success=False
+
+    return Response(json.dumps({'success': success, 'data': {"key": key, "value": data} }), content_type='application/json', status=status)
+
+def etcdClient():
+    host=ETCD_HOST
+    port=ETCD_PORT
+
+    return etcd3.client(host=host, port=port)
+
+def appendToCSV(fileName, data):
+    field_names = ['key', 'value']
+    file_size = os.path.getsize(fileName)
+    # Open CSV file in append mode
+    # Create a file object for this file
+    with open(fileName, 'a') as f_object:
+    
+        # Pass the file object and a list
+        # of column names to DictWriter()
+        # You will get a object of DictWriter
+        dictwriter_object = DictWriter(f_object, fieldnames=field_names)
+        if file_size==0:
+            dictwriter_object.writeheader()  # file doesn't exist yet, write a header
+        # Pass the dictionary as an argument to the Writerow()
+        dictwriter_object.writerow(data)
+    
+        # Close the file object
+        f_object.close()
 
 
-@blueprint.errorhandler(404)
-def not_found_error(error):
-    return render_template('home/page-404.html'), 404
+def readCSV(fileName):
+    field_names = ['key', 'value']
+    data=[]
+    # Open CSV file in read mode
+    with open(fileName, 'r') as f_object:
+    
+        # Pass the file object to DictReader()
+        # You will get a object of DictReader
+        input_file = DictReader(f_object, fieldnames=field_names)
+        next(input_file)
+        # Pass the dictionary as an argument to the Writerow()
+        for row in input_file:
+            data.append(row)
+    
+        # Close the file object
+        f_object.close()
 
-
-@blueprint.errorhandler(500)
-def internal_error(error):
-    return render_template('home/page-500.html'), 500
+    if row:
+        return {
+            "success": True,
+            "data": data
+                }
+    else:
+        return {
+            "success": False,
+            "data": "No Data Available"
+                }
