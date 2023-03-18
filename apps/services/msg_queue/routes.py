@@ -75,9 +75,9 @@ def producer():
 # @login_required
 def getKey(key):
     etcd=etcdClient()
-
+    
     response=etcd.get(key)
-
+    
     if response[0]:
         data=response[0].decode("utf-8")
         status=200
@@ -129,10 +129,23 @@ def putKey(key=None, value=None):
     return Response(json.dumps({'success': success, 'data': {"key": key, "value": data} }), content_type='application/json', status=status)
 
 def etcdClient():
-    host=ETCD_HOST
-    port=ETCD_PORT
-
-    return etcd3.client(host=host, port=port)
+    hosts=ETCD_HOST
+    
+    for host in hosts:
+        endpoint=host.split(':')
+        host=endpoint[0]
+        port=endpoint[1]
+        print(endpoint)
+        try:
+            conn=etcd3.client(host=host, port=port)
+            status=conn.status()
+            print(status)
+            return conn
+        except Exception as e:
+            if str(e)=='etcd connection failed':
+                continue
+            else:
+                return {'success': False, 'msg': 'Connection Failed'}
 
 def appendToCSV(fileName, data):
     field_names = ['key', 'value']

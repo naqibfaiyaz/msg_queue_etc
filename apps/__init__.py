@@ -25,7 +25,7 @@ logger.setLevel(logging.INFO)
 db = SQLAlchemy()
 RANGE_START=os.getenv('RANGE_START')
 RANGE_END=os.getenv('RANGE_END')
-ETCD_HOST=os.getenv('ETCD_HOST')
+ETCD_HOST=os.getenv('ETCD_HOST').split(',')
 ETCD_PORT=os.getenv('ETCD_PORT')
 # login_manager = LoginManager()
 
@@ -35,7 +35,7 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
-    for module_name in ('home', 'msg_queue'):
+    for module_name in ('home', 'msg_queue', 'etcd_cluster_mgnt'):
         module = import_module('apps.services.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
 
