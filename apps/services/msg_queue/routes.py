@@ -8,6 +8,8 @@ from flask import render_template, json, request, jsonify, Response, redirect
 # from flask_login import login_required
 import etcd3, os.path
 from csv import DictWriter, DictReader
+import random
+import string
 
 from apps import RANGE_START, RANGE_END, ETCD_HOST, ETCD_PORT
 
@@ -25,8 +27,9 @@ def index():
 # @login_required
 def consumer():
     i=int(RANGE_START)
+    chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
     values=[]
-    fileName='consumer.csv'
+    fileName='consumer_' + chars + '.csv'
     while i<=int(RANGE_END):
         key='test' + str(i)
         data=json.loads(getKey(key).data)
@@ -149,7 +152,9 @@ def etcdClient():
 
 def appendToCSV(fileName, data):
     field_names = ['key', 'value']
-    file_size = os.path.getsize(fileName)
+    file_size=0
+    if os.path.exists(fileName):
+        file_size = os.path.getsize(fileName)
     # Open CSV file in append mode
     # Create a file object for this file
     with open(fileName, 'a') as f_object:
