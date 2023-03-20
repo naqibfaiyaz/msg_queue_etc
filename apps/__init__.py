@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 import os
-
+import argparse
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
@@ -23,8 +23,14 @@ logging.info("Memcache Initialized: ", memcache)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 db = SQLAlchemy()
-RANGE_START=os.getenv('RANGE_START')
-RANGE_END=os.getenv('RANGE_END')
+parser = argparse.ArgumentParser()
+parser.add_argument("--start", help="Add the start index of the key", type=int)
+parser.add_argument("--end", help="Add the end index of the key", type=int)
+args = parser.parse_args()
+print(args.start, args.end)
+RANGE_START=args.start or os.getenv('RANGE_START')
+RANGE_END=args.end or os.getenv('RANGE_END')
+print(RANGE_START, RANGE_END)
 ETCD_HOST=os.getenv('ETCD_HOST').split(',')
 ETCD_PORT=os.getenv('ETCD_PORT')
 # login_manager = LoginManager()

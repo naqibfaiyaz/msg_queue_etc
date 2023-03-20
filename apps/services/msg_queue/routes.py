@@ -26,11 +26,17 @@ def index():
 @blueprint.route('/consumer/execute', methods=['GET', 'POST'])
 # @login_required
 def consumer():
-    i=int(RANGE_START)
+    print(request.args.get('start'))
+    print(request.args.get('end'))
+    start=request.args.get('start') or RANGE_START
+    end=request.args.get('end') or RANGE_END
+    print(start)
+    print(end)
+    i=int(start)
     chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
     values=[]
     fileName='consumer_' + chars + '.csv'
-    while i<=int(RANGE_END):
+    while i<=int(end):
         key='test' + str(i)
         data=json.loads(getKey(key).data)
         print(data)
@@ -52,23 +58,32 @@ def consumer():
 @blueprint.route('/producer/execute', methods=['GET', 'POST'])
 # @login_required
 def producer():
-    i=0
+    print(request.args.get('start'))
+    print(request.args.get('end'))
+    start=request.args.get('start') or RANGE_START
+    end=request.args.get('end') or RANGE_END
+    print(start)
+    print(end)
+    i=int(start)
+    # chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
     values=[]
-    fileName='producer.csv'
-    data = readCSV(fileName)
+    # fileName='producer.csv'
+    # data = readCSV(fileName)
     
-    if data['success']:
-        for row in data['data']:
-            key=row['key']
-            value=row['value']
-            
-            data=json.loads(putKey(key, value).data)
+    # if data['success']:
+    while i<=int(end):
+        key='test' + str(i)
+        value='Hello World ' + str(i)
+        # key=row['key']
+        # value=row['value']
+        
+        data=json.loads(putKey(key, value).data)
+        print(data)
+        if(data['success']):
             print(data)
-            if(data['success']):
-                print(data)
-                values.append(data['data'])
+            values.append(data['data'])
 
-            i=i+1
+        i=i+1
     
     print(values)
 
