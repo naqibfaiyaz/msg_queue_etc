@@ -9,7 +9,7 @@ from flask import render_template, json, request, jsonify, Response, redirect
 import etcd3, os.path
 from csv import DictWriter, DictReader
 
-from apps import RANGE_START, RANGE_END, ETCD_HOST, ETCD_PORT
+from apps import ETCD_HOST, ETCD_PORT
 
 @blueprint.route('/members', methods=['GET', 'POST'])
 # @login_required

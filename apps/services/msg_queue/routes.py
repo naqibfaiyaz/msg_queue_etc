@@ -11,7 +11,7 @@ from csv import DictWriter, DictReader
 import random
 import string
 
-from apps import RANGE_START, RANGE_END, ETCD_HOST, ETCD_PORT
+from apps import ETCD_HOST, ETCD_PORT
 
 @blueprint.route('/index')
 # @login_required
@@ -25,69 +25,82 @@ def index():
 
 @blueprint.route('/consumer/execute', methods=['GET', 'POST'])
 # @login_required
-def consumer():
-    print(request.args.get('start'))
-    print(request.args.get('end'))
-    start=request.args.get('start') or RANGE_START
-    end=request.args.get('end') or RANGE_END
-    print(start)
-    print(end)
-    i=int(start)
+def consumer(event):
+    key = event.key.decode('utf-8')
+    value = event.value.decode('utf-8')
+    print("You created the key " + key + " I was looking for with value " + value)
+    # print(request.args.get('start'))
+    # print(request.args.get('end'))
+    # start=request.args.get('start') or RANGE_START
+    # end=request.args.get('end') or RANGE_END
+    # print(start)
+    # print(end)
+    # i=int(start)
     chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
     values=[]
     fileName='consumer_' + chars + '.csv'
-    while i<=int(end):
-        key='test' + str(i)
-        data=json.loads(getKey(key).data)
-        print(data)
-        if(data['success']):
-            print(data)
-            ##write to file
-            appendToCSV(fileName, data['data'])
-            deleteResponse=json.loads(deleteKey(key).data)
-            if(deleteResponse['success']):
-                values.append(data['data'])
-            else:
-                values.append(data['data'])
-        i=i+1
+    # while i<=int(end):
+    key='test' + str(key)
+    data=json.loads(getKey(key).data)
+    # print(data)
+    if(data['success']):
+        # print(data)
+        ##write to file
+        appendToCSV(fileName, data['data'])
+        deleteKey(key).data
+        # if(deleteResponse['success']):
+        #     values.append(data['data'])
+        # else:
+        #     values.append(data['data'])
+    i=i+1
 
-    print(values)
+    # print(values)
 
     return Response(json.dumps({"total_consumed": len(values)}), content_type='application/json', status=200)
 
 @blueprint.route('/producer/execute', methods=['GET', 'POST'])
 # @login_required
 def producer():
-    print(request.args.get('start'))
-    print(request.args.get('end'))
-    start=request.args.get('start') or RANGE_START
-    end=request.args.get('end') or RANGE_END
-    print(start)
-    print(end)
-    i=int(start)
-    # chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
-    values=[]
-    # fileName='producer.csv'
-    # data = readCSV(fileName)
+    # print(request.args.get('start'))
+    # print(request.args.get('end'))
+    # start=request.args.get('start') or RANGE_START
+    # end=request.args.get('end') or RANGE_END
+    # print(start)
+    # print(end)
+    # i=int(start)
+    # # chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
+    # values=[]
+    # # fileName='producer.csv'
+    # # data = readCSV(fileName)
     
-    # if data['success']:
-    while i<=int(end):
-        key='test' + str(i)
-        value='Hello World ' + str(i)
-        # key=row['key']
-        # value=row['value']
+    # # if data['success']:
+    # while i<=int(end):
+    #     key='test' + str(i)
+    #     value='Hello World ' + str(i)
+    #     # key=row['key']
+    #     # value=row['value']
         
-        data=json.loads(putKey(key, value).data)
-        print(data)
-        if(data['success']):
-            print(data)
-            values.append(data['data'])
+    #     data=json.loads(putKey(key, value).data)
+    #     print(data)
+    #     if(data['success']):
+    #         print(data)
+    #         values.append(data['data'])
 
-        i=i+1
-    
-    print(values)
+    #     i=i+1
+    x=random.randint(0, 1000000)
+    key='/list/test_' + str(x)
+    value='hello_' + str(x)
+    print(key, value)
+    putKey(key, value)
+    # print(values)
+    return "OK"
+    # return Response(json.dumps({"total_produced": len(values)}), content_type='application/json', status=200)
 
-    return Response(json.dumps({"total_produced": len(values)}), content_type='application/json', status=200)
+@blueprint.route('/watch/<key>', methods=['GET', 'POST'])
+def watchKey(prefix):
+    prefix=prefix or request.args.get('prefix')
+    etcd=etcdClient()
+    return etcd.watch_prefix(prefix)
 
 @blueprint.route('/get/<key>', methods=['GET', 'POST'])
 # @login_required
@@ -134,17 +147,17 @@ def putKey(key=None, value=None):
     etcd=etcdClient()
 
     response=etcd.put(key, value)
+    return response
+    # if response:
+    #     data=value
+    #     status=200
+    #     success=True
+    # else:
+    #     data="Something went wrong"
+    #     status=404
+    #     success=False
 
-    if response:
-        data=value
-        status=200
-        success=True
-    else:
-        data="Something went wrong"
-        status=404
-        success=False
-
-    return Response(json.dumps({'success': success, 'data': {"key": key, "value": data} }), content_type='application/json', status=status)
+    # return Response(json.dumps({'success': success, 'data': {"key": key, "value": data} }), content_type='application/json', status=status)
 
 def etcdClient():
     hosts=ETCD_HOST
@@ -157,7 +170,7 @@ def etcdClient():
         try:
             conn=etcd3.client(host=host, port=port)
             status=conn.status()
-            print(status)
+            
             return conn
         except Exception as e:
             if str(e)=='etcd connection failed':
@@ -214,3 +227,7 @@ def readCSV(fileName):
             "success": False,
             "data": "No Data Available"
                 }
+    
+etcd=etcdClient()
+etcd.add_watch_callback("/list/", consumer)
+# etcd.watch_prefix("/list/")
