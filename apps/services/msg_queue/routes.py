@@ -57,11 +57,13 @@ def consumer(events):
 @blueprint.route('/producer/execute', methods=['GET', 'POST'])
 # @login_required
 def producer():
-    type = request.form.get('type')
-    if type=='msg_queue':
-        prefix=request.form.get('prefix') or '/msg/test_' 
+    json_data=request.get_json()
+    if 'type' in json_data and json_data['type']=='msg_queue':
+        if 'prefix' in json_data:
+            prefix=json_data['prefix'] or '/msg/test_' 
     else:
         prefix='/only_put/test_'
+    
     # print(request.args.get('start'))
     # print(request.args.get('end'))
     # start=request.args.get('start') or RANGE_START
@@ -92,6 +94,7 @@ def producer():
     key=prefix + str(x)
     value='hello_' + str(x)
     data = {"key": key, "value": value}
+    
     print("producer: " + json.dumps(data))
     putKey(key, value)
     # print(values)
