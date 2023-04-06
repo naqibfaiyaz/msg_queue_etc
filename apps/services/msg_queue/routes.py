@@ -23,12 +23,13 @@ def RedirectIndex():
 def index():
     return render_template('home/index.html', segment='index')
 
-@blueprint.route('/consumer/execute', methods=['GET', 'POST'])
+# @blueprint.route('/consumer/execute', methods=['GET', 'POST'])
 # @login_required
-def consumer(event):
+def consumer(events):
+    event=events.events[0]
     key = event.key.decode('utf-8')
     value = event.value.decode('utf-8')
-    print("You created the key " + key + " I was looking for with value " + value)
+    # print("You created the key " + key + " I was looking for with value " + value)
     # print(request.args.get('start'))
     # print(request.args.get('end'))
     # start=request.args.get('start') or RANGE_START
@@ -36,27 +37,30 @@ def consumer(event):
     # print(start)
     # print(end)
     # i=int(start)
-    chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
-    values=[]
-    fileName='consumer_' + chars + '.csv'
-    # while i<=int(end):
-    key='test' + str(key)
-    data=json.loads(getKey(key).data)
-    # print(data)
-    if(data['success']):
-        # print(data)
-        ##write to file
-        appendToCSV(fileName, data['data'])
-        deleteKey(key).data
-        # if(deleteResponse['success']):
-        #     values.append(data['data'])
-        # else:
-        #     values.append(data['data'])
-    i=i+1
+    # chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
+    # values=[]
+    fileName='consumer' + '.csv'
+    # # while i<=int(end):
+    # key='test' + str(key)
+    data={
+        'key': key,
+        'value': value
+    }
+    print(data)
+    # if(data['success']):
+    #     # print(data)
+    #     ##write to file
+    appendToCSV(fileName, data)
+    return deleteKey(key).data
+    #     # if(deleteResponse['success']):
+    #     #     values.append(data['data'])
+    #     # else:
+    #     #     values.append(data['data'])
+    # i=i+1
 
     # print(values)
 
-    return Response(json.dumps({"total_consumed": len(values)}), content_type='application/json', status=200)
+    # return Response(json.dumps({"total_consumed": len(values)}), content_type='application/json', status=200)
 
 @blueprint.route('/producer/execute', methods=['GET', 'POST'])
 # @login_required
@@ -93,8 +97,8 @@ def producer():
     print(key, value)
     putKey(key, value)
     # print(values)
-    return "OK"
-    # return Response(json.dumps({"total_produced": len(values)}), content_type='application/json', status=200)
+    # return "OK"
+    return Response(json.dumps({"key": key, "value": value}), content_type='application/json', status=200)
 
 @blueprint.route('/watch/<key>', methods=['GET', 'POST'])
 def watchKey(prefix):
@@ -185,7 +189,7 @@ def appendToCSV(fileName, data):
         file_size = os.path.getsize(fileName)
     # Open CSV file in append mode
     # Create a file object for this file
-    with open(fileName, 'a') as f_object:
+    with open(fileName, 'a', newline='') as f_object:
     
         # Pass the file object and a list
         # of column names to DictWriter()
@@ -229,5 +233,6 @@ def readCSV(fileName):
                 }
     
 etcd=etcdClient()
-# etcd.add_watch_callback("/list/", consumer)
-etcd.watch_prefix("/list/")
+etcd.add_watch_prefix_callback("/list/test_", consumer)
+# watch_data=etcd.watch_prefix("/list/test_1")
+# print(watch_data)
