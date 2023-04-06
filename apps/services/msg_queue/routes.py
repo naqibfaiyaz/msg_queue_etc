@@ -42,15 +42,18 @@ def consumer(events):
     fileName='consumer' + '.csv'
     # # while i<=int(end):
     # key='test' + str(key)
-    data={
-        'key': key,
-        'value': value
-    }
-    print(data)
-    # if(data['success']):
-    #     # print(data)
-    #     ##write to file
-    appendToCSV(fileName, data)
+    print(value)
+    print(len(value))
+    if len(value)>0:
+        data={
+            'key': key,
+            'value': value
+        }
+        print("event_data: " + json.dumps(data))
+        # if(data['success']):
+        #     # print(data)
+        #     ##write to file
+        appendToCSV(fileName, data)
     return deleteKey(key).data
     #     # if(deleteResponse['success']):
     #     #     values.append(data['data'])
@@ -92,13 +95,14 @@ def producer():
 
     #     i=i+1
     x=random.randint(0, 1000000)
-    key='/list/test_' + str(x)
+    key='/msg/test_' + str(x)
     value='hello_' + str(x)
-    print(key, value)
+    data = {"key": key, "value": value}
+    print("put data: " + json.dumps(data))
     putKey(key, value)
     # print(values)
     # return "OK"
-    return Response(json.dumps({"key": key, "value": value}), content_type='application/json', status=200)
+    return Response(json.dumps(data), content_type='application/json', status=200)
 
 @blueprint.route('/watch/<key>', methods=['GET', 'POST'])
 def watchKey(prefix):
@@ -231,8 +235,22 @@ def readCSV(fileName):
             "success": False,
             "data": "No Data Available"
                 }
-    
-etcd=etcdClient()
-etcd.add_watch_prefix_callback("/list/test_", consumer)
-# watch_data=etcd.watch_prefix("/list/test_1")
-# print(watch_data)
+
+@blueprint.route('/prefix_watch/', methods=['GET', 'POST'])
+def define_watcher(prefixes=None):
+    prefix=prefixes or request.form.get('prefix')
+    etcd=etcdClient()
+    print(prefix)
+    watch_data=etcd.add_watch_prefix_callback(prefix, consumer)
+    # watch_data=etcd.watch_prefix("/msg/test_1")
+    return  Response(json.dumps(watch_data), content_type='application/json', status=200)
+
+@blueprint.route('/cancel_watch/', methods=['GET', 'POST'])
+def define_cancel_watcher(id=None):
+    watch_id=id or request.form.get('watch_id')
+    etcd=etcdClient()
+    print(watch_id)
+    watch_data=etcd.cancel_watch(watch_id)
+    # watch_data=etcd.watch_prefix("/msg/test_1")
+    return  Response(json.dumps(watch_data), content_type='application/json', status=200)
+
