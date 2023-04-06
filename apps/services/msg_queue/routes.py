@@ -229,5 +229,5 @@ def readCSV(fileName):
                 }
     
 etcd=etcdClient()
-etcd.add_watch_callback("/list/", consumer)
-# etcd.watch_prefix("/list/")
+# etcd.add_watch_callback("/list/", consumer)
+etcd.watch_prefix("/list/")

@@ -15,7 +15,7 @@ Flask-Minify==0.37
 pandas==1.5.3
 pympler==1.0.1
 requests==2.28.2
-flask_mysqldb
+# flask_mysqldb
 boto3==1.26.77
 ec2-metadata
 etcd3
