@@ -42,9 +42,9 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
-    for module_name in ('home', 'msg_queue', 'etcd_cluster_mgnt'):
-        module = import_module('apps.services.{}.routes'.format(module_name))
-        app.register_blueprint(module.blueprint)
+    # for module_name in ('msg_queue'):
+    module = import_module('apps.services.msg_queue.routes')
+    app.register_blueprint(module.blueprint)
 
 
 def configure_database(app):

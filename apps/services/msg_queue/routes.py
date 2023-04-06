@@ -4,24 +4,13 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from apps.services.msg_queue import blueprint
-from flask import render_template, json, request, jsonify, Response, redirect
+from flask import json, request, Response
 # from flask_login import login_required
 import etcd3, os.path
 from csv import DictWriter, DictReader
 import random
-import string
 
 from apps import ETCD_HOST, ETCD_PORT, FILE_LOCATION
-
-@blueprint.route('/index')
-# @login_required
-def RedirectIndex():
-    return index()
-
-@blueprint.route('/')
-# @login_required
-def index():
-    return render_template('home/index.html', segment='index')
 
 # @blueprint.route('/consumer/execute', methods=['GET', 'POST'])
 # @login_required
@@ -42,14 +31,14 @@ def consumer(events):
     fileName=FILE_LOCATION
     # # while i<=int(end):
     # key='test' + str(key)
-    print(value)
-    print(len(value))
+    # print(value)
+    # print(len(value))
     if len(value)>0:
         data={
             'key': key,
             'value': value
         }
-        print("event_data: " + json.dumps(data))
+        print("consumer: " + json.dumps(data))
         # if(data['success']):
         #     # print(data)
         #     ##write to file
@@ -68,7 +57,11 @@ def consumer(events):
 @blueprint.route('/producer/execute', methods=['GET', 'POST'])
 # @login_required
 def producer():
-    prefix='/msg/test_' or request.form.get('prefix')
+    type = request.form.get('type')
+    if type=='msg_queue':
+        prefix=request.form.get('prefix') or '/msg/test_' 
+    else:
+        prefix='/only_put/test_'
     # print(request.args.get('start'))
     # print(request.args.get('end'))
     # start=request.args.get('start') or RANGE_START
@@ -99,7 +92,7 @@ def producer():
     key=prefix + str(x)
     value='hello_' + str(x)
     data = {"key": key, "value": value}
-    print("put data: " + json.dumps(data))
+    print("producer: " + json.dumps(data))
     putKey(key, value)
     # print(values)
     # return "OK"
@@ -192,7 +185,7 @@ def appendToCSV(fileName, data):
     file_size=0
     if os.path.exists(fileName):
         file_size = os.path.getsize(fileName)
-        print(file_size)
+        # print(file_size)
     # Open CSV file in append mode
     # Create a file object for this file
     try:
@@ -203,8 +196,8 @@ def appendToCSV(fileName, data):
         return error
     
     with f as f_object:
-        print(f_object)
-        print(os.path.abspath(fileName))
+        # print(f_object)
+        # print(os.path.abspath(fileName))
         # Pass the file object and a list
         # of column names to DictWriter()
         # You will get a object of DictWriter
@@ -212,8 +205,8 @@ def appendToCSV(fileName, data):
         if file_size==0:
             dictwriter_object.writeheader()  # file doesn't exist yet, write a header
         # Pass the dictionary as an argument to the Writerow()
-        write=dictwriter_object.writerow(data)
-        print(write)
+        dictwriter_object.writerow(data)
+        # print(write)
     
         # Close the file object
         f_object.close()
@@ -251,7 +244,7 @@ def readCSV(fileName):
 def define_watcher(prefixes=None):
     prefix=prefixes or request.form.get('prefix')
     etcd=etcdClient()
-    print(prefix)
+    # print(prefix)
     watch_data=etcd.add_watch_prefix_callback(prefix, consumer)
     # watch_data=etcd.watch_prefix("/msg/test_1")
     return  Response(json.dumps(watch_data), content_type='application/json', status=200)
@@ -260,7 +253,7 @@ def define_watcher(prefixes=None):
 def define_cancel_watcher(id=None):
     watch_id=id or request.form.get('watch_id')
     etcd=etcdClient()
-    print(watch_id)
+    # print(watch_id)
     watch_data=etcd.cancel_watch(watch_id)
     # watch_data=etcd.watch_prefix("/msg/test_1")
     return  Response(json.dumps(watch_data), content_type='application/json', status=200)
