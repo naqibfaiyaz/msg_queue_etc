@@ -8,6 +8,9 @@ services:
     networks:
       - db_network
       - web_network
+    volumes:
+      - ./data/sessions:/sessions
+      - ../:/root/msg_queue_etcd
   nginx_be:
     container_name: nginx_be
     restart: always
