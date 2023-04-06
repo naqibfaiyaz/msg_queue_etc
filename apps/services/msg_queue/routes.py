@@ -57,12 +57,14 @@ def consumer(events):
 @blueprint.route('/producer/execute', methods=['GET', 'POST'])
 # @login_required
 def producer():
-    json_data=request.get_json()
-    if 'type' in json_data and json_data['type']=='msg_queue':
-        if 'prefix' in json_data:
-            prefix=json_data['prefix'] or '/msg/test_' 
-    else:
-        prefix='/only_put/test_'
+    # json_data=request.get_json()
+    # if 'type' in json_data and json_data['type']=='msg_queue':
+    #     if 'prefix' in json_data:
+    #         prefix=json_data['prefix'] or '/msg/test_' 
+    # else:
+    #     prefix='/only_put/test_'
+
+    prefix='/msg/test_' 
     
     # print(request.args.get('start'))
     # print(request.args.get('end'))
