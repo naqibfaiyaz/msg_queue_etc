@@ -195,7 +195,14 @@ def appendToCSV(fileName, data):
         print(file_size)
     # Open CSV file in append mode
     # Create a file object for this file
-    with open(fileName, 'a', newline='') as f_object:
+    try:
+        f = open(fileName, 'a', newline='')
+    except OSError as error:
+        print("Could not open/read file:", fileName)
+        print(error)
+        return error
+    
+    with f as f_object:
         print(f_object)
         print(os.path.abspath(fileName))
         # Pass the file object and a list
@@ -205,7 +212,8 @@ def appendToCSV(fileName, data):
         if file_size==0:
             dictwriter_object.writeheader()  # file doesn't exist yet, write a header
         # Pass the dictionary as an argument to the Writerow()
-        dictwriter_object.writerow(data)
+        write=dictwriter_object.writerow(data)
+        print(write)
     
         # Close the file object
         f_object.close()
