@@ -11,7 +11,7 @@ from csv import DictWriter, DictReader
 import random
 import string
 
-from apps import ETCD_HOST, ETCD_PORT
+from apps import ETCD_HOST, ETCD_PORT, FILE_LOCATION
 
 @blueprint.route('/index')
 # @login_required
@@ -39,7 +39,7 @@ def consumer(events):
     # i=int(start)
     # chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
     # values=[]
-    fileName='apps/static/consumer' + '.csv'
+    fileName=FILE_LOCATION
     # # while i<=int(end):
     # key='test' + str(key)
     print(value)

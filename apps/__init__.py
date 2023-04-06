@@ -33,6 +33,7 @@ db = SQLAlchemy()
 # print(RANGE_START, RANGE_END)
 ETCD_HOST=os.getenv('ETCD_HOST').split(',')
 ETCD_PORT=os.getenv('ETCD_PORT')
+FILE_LOCATION=os.getenv('FILE_LOCATION')
 # login_manager = LoginManager()
 
 def register_extensions(app):
