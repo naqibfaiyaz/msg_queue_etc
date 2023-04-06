@@ -39,7 +39,7 @@ def consumer(events):
     # i=int(start)
     # chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
     # values=[]
-    fileName='consumer' + '.csv'
+    fileName='apps/static/consumer' + '.csv'
     # # while i<=int(end):
     # key='test' + str(key)
     print(value)
