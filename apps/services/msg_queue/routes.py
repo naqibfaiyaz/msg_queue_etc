@@ -68,6 +68,7 @@ def consumer(events):
 @blueprint.route('/producer/execute', methods=['GET', 'POST'])
 # @login_required
 def producer():
+    prefix='/msg/test_' or request.form.get('prefix')
     # print(request.args.get('start'))
     # print(request.args.get('end'))
     # start=request.args.get('start') or RANGE_START
@@ -95,7 +96,7 @@ def producer():
 
     #     i=i+1
     x=random.randint(0, 1000000)
-    key='/msg/test_' + str(x)
+    key=prefix + str(x)
     value='hello_' + str(x)
     data = {"key": key, "value": value}
     print("put data: " + json.dumps(data))
