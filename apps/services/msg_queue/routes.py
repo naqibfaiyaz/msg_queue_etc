@@ -192,10 +192,12 @@ def appendToCSV(fileName, data):
     file_size=0
     if os.path.exists(fileName):
         file_size = os.path.getsize(fileName)
+        print(file_size)
     # Open CSV file in append mode
     # Create a file object for this file
     with open(fileName, 'a', newline='') as f_object:
-    
+        print(f_object)
+        print(os.path.abspath(fileName))
         # Pass the file object and a list
         # of column names to DictWriter()
         # You will get a object of DictWriter
