@@ -8,7 +8,7 @@ from flask import json, request, Response
 # from flask_login import login_required
 import etcd3, os.path
 from csv import DictWriter, DictReader
-import random
+import random, datetime
 
 from apps import ETCD_HOST, ETCD_PORT, FILE_LOCATION
 
@@ -38,7 +38,7 @@ def consumer(events):
             'key': key,
             'value': value
         }
-        print("consumer: " + json.dumps(data))
+        print("datetime" + datetime.datetime.now() + "; consumer: " + json.dumps(data))
         # if(data['success']):
         #     # print(data)
         #     ##write to file
@@ -97,7 +97,7 @@ def producer():
     value='hello_' + str(x)
     data = {"key": key, "value": value}
     
-    print("producer: " + json.dumps(data))
+    print("datetime" + datetime.datetime.now() + "; producer: " + json.dumps(data))
     putKey(key, value)
     # print(values)
     # return "OK"
@@ -294,7 +294,8 @@ def readCSV(fileName):
 def define_watcher(prefixes=None):
     prefix=prefixes or request.form.get('prefix')
     etcd=etcdClient()
-    # print(prefix)
+    print("datetime" + datetime.datetime.now() + "; prefix:" + prefix)
+    
     watch_data=etcd.add_watch_prefix_callback(prefix, consumer)
     # watch_data=etcd.watch_prefix("/msg/test_1")
     return  Response(json.dumps(watch_data), content_type='application/json', status=200)
