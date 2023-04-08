@@ -38,7 +38,7 @@ def consumer(events):
             'key': key,
             'value': value
         }
-        print("datetime" + str(datetime.datetime.now()) + "; consumer: " + json.dumps(data))
+        print("datetime: " + str(datetime.datetime.now()) + "; consumer: " + json.dumps(data))
         # if(data['success']):
         #     # print(data)
         #     ##write to file
@@ -97,7 +97,7 @@ def producer():
     value='hello_' + str(x)
     data = {"key": key, "value": value}
     
-    print("datetime" + str(datetime.datetime.now()) + "; producer: " + json.dumps(data))
+    print("datetime: " + str(datetime.datetime.now()) + "; producer: " + json.dumps(data))
     putKey(key, value)
     # print(values)
     # return "OK"
@@ -294,7 +294,7 @@ def readCSV(fileName):
 def define_watcher(prefixes=None):
     prefix=prefixes or request.form.get('prefix')
     etcd=etcdClient()
-    print("datetime" + str(datetime.datetime.now()) + "; prefix:" + prefix)
+    print("datetime: " + str(datetime.datetime.now()) + "; prefix:" + prefix)
     
     watch_data=etcd.add_watch_prefix_callback(prefix, consumer)
     # watch_data=etcd.watch_prefix("/msg/test_1")
