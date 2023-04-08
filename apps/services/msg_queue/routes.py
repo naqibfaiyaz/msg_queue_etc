@@ -103,6 +103,51 @@ def producer():
     # return "OK"
     return Response(json.dumps(data), content_type='application/json', status=200)
 
+@blueprint.route('/producer/execute/batch', methods=['GET', 'POST'])
+# @login_required
+def batch_producer():
+    batchSize=request.args.get('batch_size') or 1000
+    print(batchSize)
+    # json_data=request.get_json()
+    # if 'type' in json_data and json_data['type']=='msg_queue':
+    #     if 'prefix' in json_data:
+    #         prefix=json_data['prefix'] or '/msg/test_' 
+    # else:
+    #     prefix='/only_put/test_'
+
+    prefix='/msg/test_' 
+    
+    # print(request.args.get('start'))
+    # print(request.args.get('end'))
+    # start=request.args.get('start') or RANGE_START
+    # end=request.args.get('end') or RANGE_END
+    # print(start)
+    # print(end)
+    # i=int(start)
+    # # chars = "".join( [random.choice(string.ascii_letters) for i in range(15)] )
+    # values=[]
+    # # fileName='producer.csv'
+    # # data = readCSV(fileName)
+    i=0
+    dataArr=[]
+    # # if data['success']:
+    while i<=int(batchSize):
+        x=random.randint(0, 1000000)
+        key=prefix + str(x)
+        value='hello_' + str(x)
+        data = {"key": key, "value": value}
+        # key=row['key']
+        # value=row['value']
+        
+        print("producer: " + json.dumps(data))
+        putKey(key, value)
+        dataArr.append(data)
+        i=i+1
+    
+    # print(values)
+    # return "OK"
+    return Response(json.dumps(data), content_type='application/json', status=200)
+
 @blueprint.route('/watch/<key>', methods=['GET', 'POST'])
 def watchKey(prefix):
     prefix=prefix or request.args.get('prefix')
