@@ -218,7 +218,7 @@ def etcdClient():
         endpoint=host.split(':')
         host=endpoint[0]
         port=endpoint[1]
-        print(endpoint)
+        # print(endpoint)
         try:
             conn=etcd3.client(host=host, port=port)
             status=conn.status()
