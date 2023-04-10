@@ -1,4 +1,4 @@
-# [msg queue with python etcd-client]
+# Msg queue with python etcd-client
 
 ## ✨ Setup ETCD cluster
 
