@@ -5,8 +5,19 @@
 Use digital ocean for testing, they provide 200 credits and sufficient to test this.
 
 > **Step 1** - Spin up 3 droplets; choose docker image from marketplace
+
+<br />
+
 > **Step 2** - Setup ETCD cLuster
+
+<br />
+
+```txt
 In each server run the follwing commands
+```
+
+<br />
+
 ```bash
 $ mkdir etcd
 $ cd etcd
@@ -45,7 +56,7 @@ docker run \
   --initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN} >> log/${NAME_1}.log 2>&1 &
 ```
 
-Paste the following in node 2:
+Paste the following in node 2 and press :q! to save the files:
 ```txt
 #!/bin/bash
 REGISTRY=quay.io/coreos/etcd
@@ -77,7 +88,7 @@ docker run \
   --initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN} >> log/${NAME_2}.log 2>&1 &
 ```
 
-Paste the following in node 3:
+Paste the following in node 3 and press :q! to save the files:
 ```txt
 #!/bin/bash
 REGISTRY=quay.io/coreos/etcd
@@ -118,6 +129,8 @@ $ ./start.sh
 Your cluster is ready, run the following to test the cluster status
 ```
 
+<br />
+
 > **Step 3** - Setup etcdctl in local
 ```bash
 $ sudo apt update
@@ -137,6 +150,8 @@ $ rm -rf etcd-$ETCD_VERSION-linux-amd64
 $ etcdctl --version
 ```
 
+<br />
+
 > **Step 4** - Check cluster health and member list
 
 ```bash
@@ -144,7 +159,12 @@ $ etcdctl --write-out=table --endpoints=$ENDPOINTS endpoint status
 $ etcdctl --write-out=table --endpoints=$ENDPOINTS member list
 ```
 
-> **Step 5** - Setup the application
+<br />
+
+## ✨ Setup msg_queue application
+
+
+> **Step 1** - Setup the application
 ```bash
 $ git clone https://github.com/naqibfaiyaz/msg_queue_etcd
 $ sudo pip3 install virtualenv
@@ -177,7 +197,9 @@ paste the following and press :q! to save:
 docker-compose up --build > log.txt 2>&1 &
 ```
 
-> **Step 6** - start the application
+<br />
+
+> **Step 2** - start the application
 ```bash
 $ chmod +x start.sh
 $ ./start.sh
@@ -195,22 +217,33 @@ curl --location --request GET 'http://{{application_endpoint}}:2379/api/prefix_w
 --form 'prefix="/msg/test_"'
 ```
 
-> **Step 7** - Install ab benchmark tool
+<br />
+
+## ✨ Setup benchmark tools
+
+> **Step 1** - Install ab benchmark tool
 ```bash
 $ apt-get install apache2-utils 
 ```
 Visit `http://localhost:5085` in your browser. The app should be up & running.
 
+<br />
 
-> **Step 8** - ETCD benchmarking
+> **Step 2** - ETCD benchmarking
 ```txt
 Please follow ETCD documentation: https://etcd.io/docs/v3.4/op-guide/performance/#benchmarks
 ```
 
-> **Step 9** - ETCD Prometheus and Grafana
+<br />
+
+## ✨ Setup monitoring
+
+> **Step 1** - ETCD Prometheus and Grafana
 ```txt
 Please follow the documentation: https://etcd.io/docs/v3.1/op-guide/monitoring/
 ```
+
+<br />
 
 ## ✨ Code-base structure
 
