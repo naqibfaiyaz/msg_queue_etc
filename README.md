@@ -183,7 +183,7 @@ FLASK_ENV=development
 RANGE_START=0
 RANGE_END=11
 ETCD_HOST='67.205.137.130:2379,143.198.162.212:2379,143.198.161.94:2379,142.93.148.224:2379,142.93.151.80:2379' # use your droplet IPs
-FILE_LOCATION='tmp/consumer.csv'
+FILE_LOCATION='apps/static/consumer.csv'
 ```
 
 ```bash
