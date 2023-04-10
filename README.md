@@ -245,6 +245,38 @@ Please follow the documentation: https://etcd.io/docs/v3.1/op-guide/monitoring/
 
 <br />
 
+## ✨ Addtional commands, comes handy while running the benchmarkings
+
+> Add new nodes:
+```txt
+While adding new nodes change the CLUSTER_STATE environment variable to 'existing' from 'new'
+
+CLUSTER_STATE=existing
+
+also run  rm -rf /var/lib/etcd if the node ran etcd previously
+```
+
+<br />
+
+> Add and remove nodes from cluster
+
+```bash
+$ etcdctl --endpoints=$ENDPOINTS member add ${NAME_4} --peer-urls=http://${HOST_4}:2380
+$ etcdctl --endpoints=$ENDPOINTS member remove 8e9f539e948d6de8
+```
+
+<br />
+
+> compaction and defragmation
+```bash
+$ rev=$(ETCDCTL_API=3 etcdctl --endpoints=http://$HOST_1:2379 endpoint status --write-out="json" | egrep -o '"revision":[0-9]*' | egrep -o '[0-9].*')
+$ ETCDCTL_API=3 etcdctl --endpoints=$ENDPOINTS compact $rev
+$ ETCDCTL_API=3 etcdctl --endpoints=$ENDPOINTS defrag
+$ etcdctl --write-out=table --endpoints=$ENDPOINTS endpoint status
+```
+
+<br />
+
 ## ✨ Code-base structure
 
 The project is coded using blueprints and an intuitive structure presented bellow:
