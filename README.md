@@ -277,6 +277,25 @@ $ etcdctl --write-out=table --endpoints=$ENDPOINTS endpoint status
 
 <br />
 
+## ✨ Terrafrom infrastructure provisioning
+
+You can use Terrafrom to setup any desired number of nodes by adding the name of nodes in `varialbe.tf` file,
+and then running the following commands
+
+```bash
+terrafrom init
+terrafrom apply
+```
+
+## ✨ Ansible
+
+You can launch etcd on any number of desired nodes, by simply adding IP of each node to `Inventory` and then running
+
+```bash
+ansible-playbook playbook.yaml
+```
+
+
 ## ✨ Code-base structure
 
 The project is coded using blueprints and an intuitive structure presented bellow:
