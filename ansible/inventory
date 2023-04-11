@@ -1,0 +1,25 @@
+[etcd]
+etcd1   ansible_host=<IP> ansible_user=ubuntu
+etcd2   ansible_host=<IP> ansible_user=ubuntu
+etcd3   ansible_host=<IP> ansible_user=ubuntu
+etcd4   ansible_host=<IP> ansible_user=ubuntu
+etcd5   ansible_host=<IP> ansible_user=ubuntu
+etcd6   ansible_host=<IP> ansible_user=ubuntu
+etcd7   ansible_host=<IP> ansible_user=ubuntu
+etcd8   ansible_host=<IP> ansible_user=ubuntu
+etcd9   ansible_host=<IP> ansible_user=ubuntu
+etcd10  ansible_host=<IP> ansible_user=ubuntu
+etcd11  ansible_host=<IP> ansible_user=ubuntu
+etcd12  ansible_host=<IP> ansible_user=ubuntu
+etcd13  ansible_host=<IP> ansible_user=ubuntu
+etcd14  ansible_host=<IP> ansible_user=ubuntu
+etcd15  ansible_host=<IP> ansible_user=ubuntu
+etcd16  ansible_host=<IP> ansible_user=ubuntu
+etcd17  ansible_host=<IP> ansible_user=ubuntu
+etcd18  ansible_host=<IP> ansible_user=ubuntu
+etcd19  ansible_host=<IP> ansible_user=ubuntu
+etcd20  ansible_host=<IP> ansible_user=ubuntu
+
+[monitoring]
+monitor ansible_host=<IP> ansible_user=ubuntu 
+

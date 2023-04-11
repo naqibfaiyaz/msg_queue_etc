@@ -1,0 +1,47 @@
+- hosts: monitoring
+  become: True
+  tasks:
+    - name: update and install prometheus
+      apt:
+        name: prometheus
+        state: latest
+        update_cache: yes
+        cache_valid_time: 3600
+    - name: prometheus configuration file
+      template:
+        src: prometheus.yaml.j2
+        dest: "/etc/prometheus/prometheus.yml"
+        mode: 0755
+        owner: prometheus
+        group: prometheus
+    - name: start prometheus
+      systemd:
+        name: prometheus
+        state: started
+        enabled: yes
+    - name: install gpg
+      apt:
+        name: gnupg,software-properties-common
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+    - name: add gpg hey
+      apt_key:
+        url: "https://packages.grafana.com/gpg.key"
+        validate_certs: no
+    - name: add repository
+      apt_repository:
+        repo: "deb https://packages.grafana.com/oss/deb stable main"             
+        state: present
+        validate_certs: no
+    - name: install grafana
+      apt:
+        name: grafana
+        state: latest
+        update_cache: yes
+        cache_valid_time: 3600
+    - name: start service grafana-server
+      systemd:
+        name: grafana-server
+        state: started
+        enabled: yes
